@@ -23,22 +23,30 @@
 	(:use [clojure.string :only (split)])
 	)
 
-(defn cef-find-kv [cefs]
-	(last (split cefs #"\|" 8))
-	)
+; CEF connector prefixes with pipe delimited before getting to key value data
+(defn find-kv [cefs]
+    (last (split cefs #"\|" 8))
+    )
 
 (defn keyval [s]
-	(map
-		#(take-last 2 %)
-		(map #(re-find #"(\w+)=(.*)" %)  (split s #" (?=\w+=)"))
-		)
-	)
+    (map
+        #(take-last 2 %)
+        (map #(re-find #"(\w+)=(.*)" %)  (split s #" (?=\w+=)"))
+        )
+    )
 
+; convenience: keywords to symbols
 (defn symval [k v] [(keyword k) v])
 
-(defn cef-parse [cefs]
-	(into {} (map (fn [[k v]] (symval k v)) (keyval (cef-find-kv cefs))))
-	)
+; accepts key val pairs and returns dict
+(defn cef-parse [cefkv]
+    (into {} (map (fn [[k v]] (symval k v)) (keyval cefkv)))
+    )
+
+; accepts line from Syslog CEF and returns dict
+(defn cef-from-line [line]
+    (cef-parse (find-kv line))
+    )
 
 (defn -main
 	[]
