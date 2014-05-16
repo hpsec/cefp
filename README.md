@@ -4,6 +4,8 @@ A CEF-ish parser, accepting CEF input and returning a native hash, written in
 about 30 lines of clojure and compiling to a native Java jar for use in your
 jvm related projects.
 
+There is also a python snippet providing similar functionality under contrib/.
+
 ## Why CEF-ish?
 
 The fields themselves aren't inspected so everything gets returned as a string
