@@ -80,6 +80,35 @@ def unescape_cef_value(s):
 def cef2json(line):
     return json.dumps(parse_cef(line))
 
+def item_as_cef(item):
+    HEADER_KEYS = ["devicevendor", "deviceproduct", "deviceversion",
+                   "signatureid", "name", "severity"]
+    header = ["" for _ in HEADER_KEYS]
+    extension = {}
+    for key,value in item.iteritems():
+        if key in HEADER_KEYS:
+            esc = value.replace('\\','\\\\').replace('|','\\|')
+            header[HEADER_KEYS.index(key)] = esc.encode('utf-8')
+        elif key=='_cefVer':
+            continue
+        else:
+            if isinstance(value,basestring):
+                value = value.replace('\\','\\\\').replace('=','\\=')
+                value = value.replace('\r','\\r').replace('\n','\\n')
+                extension[key] = value.encode('utf-8')
+            else:
+                extension[key] = str(value)
+
+    header_str = "|".join(header)
+    extension_str = " ".join(
+        "{}={}".format(key,value)
+        for key,value in extension.iteritems()
+    )
+    return "CEF:0|{}|{} _cefVer=0.1\n".format(header_str,extension_str)
+
+def json2cef(line):
+    return item_as_cef(json.loads(line))
+
 if __name__ == '__main__':
     for line in fileinput.input():
         print(cef2json(line.rstrip('\n')))
